@@ -195,6 +195,7 @@ Cutoff: 30%
    Sensitividade  Especificidade  Acurácia
 0       0.724144        0.882893  0.848426
 
+![image](https://user-images.githubusercontent.com/94931093/226200991-c448d4f0-bab1-4489-a1d7-7f597c5dbe44.png)
 
 
 Cutoff: 50%
