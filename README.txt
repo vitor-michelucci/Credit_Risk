@@ -1,6 +1,10 @@
 # Credit_Risk
 Regressão logística binária para classificação de risco de crédito.
 
+***********************************************************************************
+OBSERVAÇÃO: POSTERIORMENTE OS NOMES DAS VARIÁVEIS FORAM TRADUZIDOS PARA PORTUGUÊS.
+***********************************************************************************
+
 1. Variáveis do dataset:
 RangeIndex: 28501 entries, 0 to 28500
 Data columns (total 12 columns):
