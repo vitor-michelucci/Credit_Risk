@@ -49,7 +49,7 @@ df.duplicated().sum()
 
 df.nunique()
 
-#%% removendo valores faltantes
+#%% Removendo valores faltantes
 
 df.dropna(inplace=True)
 
@@ -59,7 +59,12 @@ df.drop_duplicates(inplace=True)
 
 #%% Renomeando variáveis
 
-df = df.rename(columns={'loan_status': 'default'})
+df = df.rename(columns={'person_age':'idade', 'person_income':'renda', 'person_home_ownership':'tipo_moradia', 
+                        'person_emp_length':'tempo_emprego', 'loan_intent':'finalidade_emp',
+                        'loan_grade':'score_emp', 'loan_amnt':'valor_emp', 'loan_int_rate':'tx_jr_emp', 
+                        'loan_percent_income':'perc_comp_renda', 'cb_person_default_on_file':'hist_inad',
+                        'cb_person_cred_hist_length':'hist_credito', 'loan_status':'inad'})
+df.info()
 
 #%% Ordenando as colunas
 
@@ -67,6 +72,27 @@ df = df.iloc[:, [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 8]]
 
 df.info()
 df.shape
+
+#%% Renomeando as variáveis categóricas
+
+df['tipo_moradia'].value_counts()
+df['finalidade_emp'].value_counts()
+df['hist_inad'].value_counts()
+
+df['tipo_moradia'] = df['tipo_moradia'].replace({'RENT': 'ALUGADA', 
+                                                 'MORTGAGE': 'FINANCIADA', 
+                                                 'OWN': 'PROPRIA',
+                                                 'OTHER': 'OUTROS'})
+
+df['finalidade_emp'] = df['finalidade_emp'].replace({'EDUCATION': 'EDUCACAO', 
+                                                 'MEDICAL': 'SAUDE', 
+                                                 'VENTURE': 'LAZER',
+                                                 'PERSONAL': 'PESSOAL',
+                                                 'DEBTCONSOLIDATION': 'RENEGOCIACAO',
+                                                 'HOMEIMPROVEMENT': 'REFORMA'})
+
+df['hist_inad'] = df['hist_inad'].replace({'Y': 'S'})
+                                                
 
 #%% Salvando a base de dados 
 
@@ -85,10 +111,10 @@ df.info()
 #%%# Fazendo a contagem da variável target
 
 # Contagem absoluta
-abs_count = df['default'].value_counts()
+abs_count = df['inad'].value_counts()
 
 # Contagem relativa
-rel_count = df['default'].value_counts(normalize=True)
+rel_count = df['inad'].value_counts(normalize=True)
 
 # Concatenar as duas séries de dados
 result = pd.concat([rel_count, abs_count], axis=1)
@@ -105,17 +131,17 @@ print(result)
 # Transformação das variáveis categóricas não binárias em dummies
 
 # Verificando a quantidade de categorias das variáveis 
-df['person_home_ownership'].value_counts()
-df['loan_intent'].value_counts()
-df['loan_grade'].value_counts()
-df['cb_person_default_on_file'].value_counts()
+df['tipo_moradia'].value_counts()
+df['finalidade_emp'].value_counts()
+df['score_emp'].value_counts()
+df['hist_inad'].value_counts()
 
 # get dummies
 df_dummies = pd.get_dummies(df,
-                            columns=['person_home_ownership',
-                                     'loan_intent',
-                                     'loan_grade',
-                                     'cb_person_default_on_file'],
+                            columns=['tipo_moradia',
+                                     'finalidade_emp',
+                                     'score_emp',
+                                     'hist_inad'],
                                       drop_first=True)
 
 df_dummies.info()
@@ -123,9 +149,9 @@ df_dummies.info()
 #%% Estimação do modelo logístico binário
 
 # Definição da fórmula utilizada no modelo
-lista_colunas = list(df_dummies.drop(columns=['default']).columns)
+lista_colunas = list(df_dummies.drop(columns=['inad']).columns)
 formula_dummies_modelo = ' + '.join(lista_colunas)
-formula_dummies_modelo = "default ~ " + formula_dummies_modelo
+formula_dummies_modelo = "inad ~ " + formula_dummies_modelo
 print("Fórmula utilizada: ",formula_dummies_modelo)
 
 #Modelo propriamente dito
@@ -191,15 +217,15 @@ def matriz_confusao(predicts, observado, cutoff):
 df_dummies['phat'] = step_modelo_credito.predict()
 
 #Matriz de confusão para cutoff = 0.5
-matriz_confusao(observado=df_dummies['default'],
+matriz_confusao(observado=df_dummies['inad'],
                 predicts=df_dummies['phat'],
-                cutoff=0.60)
+                cutoff=0.50)
 
 # In[ ]: Construção da curva ROC
 
 #Função 'roc_curve' do pacote 'metrics' do sklearn
 
-fpr, tpr, thresholds =roc_curve(df_dummies['default'],
+fpr, tpr, thresholds =roc_curve(df_dummies['inad'],
                                 df_dummies['phat'])
 roc_auc = auc(fpr, tpr)
 
@@ -268,7 +294,7 @@ def espec_sens(observado,predicts):
 #'especificidade' e 'cutoffs'. Assim, criamos um dataframe que contém
 #os vetores mencionados
 
-dados_plotagem = espec_sens(observado = df_dummies['default'],
+dados_plotagem = espec_sens(observado = df_dummies['inad'],
                             predicts = df_dummies['phat'])
 dados_plotagem
 
